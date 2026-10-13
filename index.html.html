@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScandiBakes & Co. — Эстетичная кулинарная книга</title>
+  
+  <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..800;1,400..800&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            scandi: {
+              cream: '#3B2318',       /* Глубокий тёмно-шоколадный цвет фона */
+              milk: '#2A180E',        /* Тёмно-кофейный акцентный фон */
+              warm: '#543628',        /* Тёплая граница / разделители */
+              terracotta: '#D4A373',  /* Элегантный золотистый / акцент */
+              'terracotta-hover': '#C08C5C',
+              coffee: '#FBF8F3',      /* Светлый кремовый цвет текста */
+              sage: '#8A9A86',
+              gold: '#D4A373',
+              soft: '#4A2E20'         /* Фон полей ввода */
+            }
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #3B2318; }
+    ::-webkit-scrollbar-thumb { background: #543628; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #D4A373; }
+    
+    .masonry-grid { column-count: 1; column-gap: 1rem; }
+    @media (min-width: 640px) { .masonry-grid { column-count: 2; column-gap: 1.25rem; } }
+    @media (min-width: 1024px) { .masonry-grid { column-count: 3; column-gap: 1.5rem; } }
+    
+    .break-inside-avoid { break-inside: avoid; }
+    .print-only { display: none; }
+    
+    /* Оптимизация сенсорных кнопок для мобильных */
+    button, input, select, textarea {
+      touch-action: manipulation;
+    }
+    
+    @media print {
+      body * { visibility: hidden; }
+      #printable-shopping-list, #printable-shopping-list * { visibility: visible; }
+      #printable-shopping-list {
+        position: absolute; left: 0; top: 0; width: 100%; display: block !important;
+        color: #000 !important; background: #fff !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-scandi-cream text-scandi-coffee font-sans min-h-screen flex flex-col selection:bg-scandi-terracotta selection:text-scandi-milk pb-20 md:pb-0">
+
+  <!-- Top Banner / Navbar -->
+  <header class="sticky top-0 z-30 bg-scandi-cream/95 backdrop-blur-md border-b border-scandi-warm transition-all shadow-md">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        
+        <!-- Logo -->
+        <div class="flex items-center gap-2.5 sm:gap-3 cursor-pointer" onclick="switchTab('recipes')">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-scandi-terracotta text-scandi-milk flex items-center justify-center font-serif font-bold text-lg sm:text-xl shadow-md">
+            S
+          </div>
+          <div>
+            <h1 class="font-serif text-xl sm:text-2xl font-bold tracking-tight text-scandi-coffee leading-tight">ScandiBakes & Co.</h1>
+            <p class="text-[10px] sm:text-xs text-scandi-terracotta font-medium tracking-wider uppercase">Уютная кулинария</p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs (Desktop) -->
+        <nav class="hidden md:flex items-center gap-1 bg-scandi-milk p-1.5 rounded-full border border-scandi-warm">
+          <button onclick="switchTab('recipes')" id="tab-recipes" class="nav-tab-btn px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-scandi-terracotta text-scandi-milk shadow-sm">
+            <i class="fa-solid fa-utensils mr-2"></i>Рецепты
+          </button>
+          <button onclick="switchTab('today')" id="tab-today" class="nav-tab-btn px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 text-scandi-coffee hover:text-scandi-terracotta relative">
+            <i class="fa-solid fa-plate-wheat mr-2"></i>Меню на сегодня
+            <span id="today-badge" class="hidden absolute -top-1 -right-1 bg-scandi-terracotta text-scandi-milk text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+          </button>
+          <button onclick="switchTab('planner')" id="tab-planner" class="nav-tab-btn px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 text-scandi-coffee hover:text-scandi-terracotta">
+            <i class="fa-regular fa-calendar-days mr-2"></i>Планер
+          </button>
+          <button onclick="switchTab('shopping')" id="tab-shopping" class="nav-tab-btn px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 text-scandi-coffee hover:text-scandi-terracotta relative">
+            <i class="fa-solid fa-basket-shopping mr-2"></i>Покупки
+            <span id="shop-badge" class="hidden absolute -top-1 -right-1 bg-scandi-terracotta text-scandi-milk text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+          </button>
+        </nav>
+
+        <!-- Right Actions -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button onclick="openModal('add-recipe-modal')" class="bg-scandi-terracotta hover:bg-scandi-terracotta-hover text-scandi-milk px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full font-medium text-xs sm:text-sm transition-all duration-200 flex items-center gap-1.5 shadow-md active:scale-95">
+            <i class="fa-solid fa-plus text-xs sm:text-sm"></i> <span class="inline">Новый рецепт</span>
+          </button>
+          
+          <button onclick="openProfileModal()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-scandi-terracotta/50 bg-scandi-milk flex items-center justify-center text-scandi-coffee hover:border-scandi-terracotta transition-all relative active:scale-95">
+            <i class="fa-regular fa-user text-base sm:text-lg"></i>
+            <span id="family-indicator" class="hidden absolute bottom-0 right-0 w-3 h-3 bg-scandi-sage rounded-full border-2 border-scandi-cream" title="Семья подключена"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Bottom Navigation Bar (Адаптированный под телефоны) -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-scandi-milk/95 backdrop-blur-lg border-t border-scandi-warm py-2 px-3 flex justify-around items-center shadow-2xl text-[11px]">
+    <button onclick="switchTab('recipes')" id="mob-tab-recipes" class="flex flex-col items-center gap-1 text-scandi-terracotta font-semibold py-1 px-3 rounded-xl transition">
+      <i class="fa-solid fa-utensils text-base"></i>Рецепты
+    </button>
+    <button onclick="switchTab('today')" id="mob-tab-today" class="flex flex-col items-center gap-1 text-scandi-coffee/70 py-1 px-3 rounded-xl transition relative">
+      <i class="fa-solid fa-plate-wheat text-base"></i>Сегодня
+      <span id="mob-today-badge" class="hidden absolute top-0 right-2 bg-scandi-terracotta text-scandi-milk text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+    </button>
+    <button onclick="switchTab('planner')" id="mob-tab-planner" class="flex flex-col items-center gap-1 text-scandi-coffee/70 py-1 px-3 rounded-xl transition">
+      <i class="fa-regular fa-calendar-days text-base"></i>Планер
+    </button>
+    <button onclick="switchTab('shopping')" id="mob-tab-shopping" class="flex flex-col items-center gap-1 text-scandi-coffee/70 py-1 px-3 rounded-xl transition relative">
+      <i class="fa-solid fa-basket-shopping text-base"></i>Покупки
+      <span id="mob-shop-badge" class="hidden absolute top-0 right-2 bg-scandi-terracotta text-scandi-milk text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+    </button>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 flex-grow w-full">
+    
+    <!-- Toast Notification Box -->
+    <div id="toast" class="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-scandi-milk text-scandi-coffee px-4 py-3 sm:px-5 sm:py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border border-scandi-warm pointer-events-none text-xs sm:text-sm">
+      <i id="toast-icon" class="fa-solid fa-circle-check text-scandi-terracotta text-base sm:text-lg"></i>
+      <span id="toast-msg" class="font-medium">Сообщение</span>
+    </div>
+
+    <!-- VIEW 1: RECIPES GALLERY -->
+    <section id="view-recipes" class="space-y-4 sm:space-y-8">
+      <div class="bg-scandi-milk rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-scandi-warm shadow-md relative overflow-hidden">
+        <div class="max-w-2xl relative z-10">
+          <span class="text-[10px] sm:text-xs font-bold tracking-widest text-scandi-terracotta uppercase">Книга вкусов и уюта</span>
+          <h2 class="font-serif text-2xl sm:text-4xl font-bold mt-1 mb-2 sm:mb-3 text-scandi-coffee">Что приготовим сегодня?</h2>
+          <p class="text-xs sm:text-sm text-scandi-coffee/70 mb-4 sm:mb-6">Коллекция любимых семейных рецептов, ароматной выпечки и идей для идеального обеда.</p>
+          
+          <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
+            <div class="relative flex-grow">
+              <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-scandi-coffee/40 text-xs sm:text-sm"></i>
+              <input type="text" id="search-input" oninput="renderRecipes()" placeholder="Поиск по названию или ингредиентам..." class="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-scandi-soft rounded-full border border-scandi-warm text-xs sm:text-sm focus:outline-none focus:border-scandi-terracotta transition text-scandi-coffee placeholder:text-scandi-coffee/40">
+            </div>
+            <button onclick="openModal('fridge-modal')" class="bg-scandi-terracotta hover:bg-scandi-terracotta-hover text-scandi-milk px-4 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition flex items-center justify-center gap-2 shadow-sm whitespace-nowrap active:scale-95">
+              <i class="fa-solid fa-kitchen-set"></i> Что в холодильнике?
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories Filter Slider (Адаптированный под прокрутку на смартфонах) -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none text-xs sm:text-sm -mx-3 px-3 sm:mx-0 sm:px-0">
+        <button onclick="setCategoryFilter('all')" class="cat-btn active border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full font-medium transition whitespace-nowrap bg-scandi-terracotta text-scandi-milk border-scandi-terracotta" data-cat="all">
+          ✨ Все блюда
+        </button>
+        <button onclick="setCategoryFilter('fav')" class="cat-btn border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full font-medium transition whitespace-nowrap bg-scandi-milk text-scandi-coffee border-scandi-warm hover:border-scandi-terracotta" data-cat="fav">
+          ❤️ Избранное
+        </button>
+        <button onclick="setCategoryFilter('Завтраки')" class="cat-btn border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full font-medium transition whitespace-nowrap bg-scandi-milk text-scandi-coffee border-scandi-warm hover:border-scandi-terracotta" data-cat="Завтраки">
+          🥞 Завтраки
+        </button>
+        <button onclick="setCategoryFilter('Первые блюда')" class="cat-btn border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full font-medium transition whitespace-nowrap bg-scandi-milk text-scandi-coffee border-scandi-warm hover:border-scandi-terracotta" data-cat="Первые блюда">
+          🍲 Первые блюда
+        </button>
+        <button onclick="setCategoryFilter('Вторые блюда')" class="cat-btn border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full font-medium transition whitespace-nowrap bg-scandi-milk text-scandi-coffee border-scandi-warm hover:border-scandi-terracotta" data-cat="Вторые блюда">
+          🍝 Вторые блюда
+        </button>
+        <button onclick="setCategoryFilter('Выпечка и десерты')" class="cat-btn border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full font-medium transition whitespace-nowrap bg-scandi-milk text-scandi-coffee border-scandi-warm hover:border-scandi-terracotta" data-cat="Выпечка и десерты">
+          🥐 Выпечка
+        </button>
+        <button onclick="setCategoryFilter('Салаты и закуски')" class="cat-btn border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full font-medium transition whitespace-nowrap bg-scandi-milk text-scandi-coffee border-scandi-warm hover:border-scandi-terracotta" data-cat="Салаты и закуски">
+          🥗 Салаты
+        </button>
+        <button onclick="setCategoryFilter('Напитки')" class="cat-btn border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full font-medium transition whitespace-nowrap bg-scandi-milk text-scandi-coffee border-scandi-warm hover:border-scandi-terracotta" data-cat="Напитки">
+          ☕ Напитки
+        </button>
+      </div>
+
+      <!-- Recipes Grid -->
+      <div id="recipes-container" class="masonry-grid space-y-4 sm:space-y-6"></div>
+
+      <!-- Empty State -->
+      <div id="empty-recipes" class="hidden text-center py-12 sm:py-16 bg-scandi-milk/60 rounded-3xl border border-dashed border-scandi-warm">
+        <div class="w-14 h-14 sm:w-16 sm:h-16 bg-scandi-soft rounded-full flex items-center justify-center mx-auto mb-3 text-scandi-terracotta text-xl sm:text-2xl">
+          <i class="fa-solid fa-cookie-bite"></i>
+        </div>
+        <h3 class="font-serif text-lg sm:text-xl font-bold text-scandi-coffee mb-1">Рецептов пока нет</h3>
+        <p class="text-xs sm:text-sm text-scandi-coffee/60 max-w-sm mx-auto mb-5 px-4">Создайте свой первый кулинарный шедевр или измените параметры поиска.</p>
+        <button onclick="openModal('add-recipe-modal')" class="bg-scandi-terracotta text-scandi-milk px-5 py-2 sm:px-6 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium hover:bg-scandi-terracotta-hover transition shadow-md active:scale-95">
+          <i class="fa-solid fa-plus mr-1"></i> Добавить рецепт
+        </button>
+      </div>
+    </section>
+
+    <!-- VIEW 2: TODAY'S MENU -->
+    <section id="view-today" class="hidden space-y-4 sm:space-y-6">
+      <div class="bg-scandi-milk text-scandi-coffee rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-scandi-warm shadow-md relative overflow-hidden">
+        <div class="max-w-xl relative z-10">
+          <span class="text-[10px] sm:text-xs font-bold tracking-widest text-scandi-terracotta uppercase">Меню дня</span>
+          <h2 class="font-serif text-2xl sm:text-3xl font-bold mt-1 mb-2">Сегодня я хочу покушать</h2>
+          <p class="text-xs sm:text-sm text-scandi-coffee/70">Выбранные блюда для сегодняшнего дня. Составляйте меню в один клик кнопкой <i class="fa-solid fa-plate-wheat text-scandi-terracotta mx-1"></i> на карточке рецепта.</p>
+        </div>
+      </div>
+
+      <div id="today-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"></div>
+
+      <div id="empty-today" class="hidden text-center py-12 sm:py-16 bg-scandi-milk/60 rounded-3xl border border-dashed border-scandi-warm">
+        <i class="fa-solid fa-plate-wheat text-3xl sm:text-4xl text-scandi-terracotta/50 mb-3"></i>
+        <h3 class="font-serif text-lg sm:text-xl font-bold text-scandi-coffee mb-1">Ваша тарелка пуста</h3>
+        <p class="text-xs sm:text-sm text-scandi-coffee/60 mb-4 px-4">Нажмите значок тарелки на любом рецепте, чтобы добавить его сюда.</p>
+        <button onclick="switchTab('recipes')" class="bg-scandi-terracotta text-scandi-milk px-5 py-2 rounded-full text-xs sm:text-sm font-medium hover:bg-scandi-terracotta-hover transition active:scale-95">
+          Перейти к рецептам
+        </button>
+      </div>
+    </section>
+
+    <!-- VIEW 3: WEEKLY PLANNER -->
+    <section id="view-planner" class="hidden space-y-4 sm:space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-scandi-milk p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-scandi-warm shadow-sm">
+        <div>
+          <h2 class="font-serif text-xl sm:text-2xl font-bold text-scandi-coffee">Планер меню на неделю</h2>
+          <p class="text-[11px] sm:text-xs text-scandi-coffee/60">Распределите блюда по дням недели для удобных закупок</p>
+        </div>
+        <button onclick="clearWeeklyPlanner()" class="text-xs text-scandi-terracotta hover:underline font-medium self-start sm:self-auto">
+          <i class="fa-solid fa-trash-can mr-1"></i> Очистить планер
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3 sm:gap-4" id="planner-days-grid"></div>
+    </section>
+
+    <!-- VIEW 4: SHOPPING LIST -->
+    <section id="view-shopping" class="hidden space-y-4 sm:space-y-6">
+      <div class="bg-scandi-milk p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-scandi-warm shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <span class="text-[10px] sm:text-xs font-bold text-scandi-terracotta uppercase">Удобный список</span>
+          <h2 class="font-serif text-xl sm:text-2xl font-bold text-scandi-coffee">Список покупок</h2>
+          <p class="text-[11px] sm:text-xs text-scandi-coffee/60">Добавляйте продукты из рецептов или вручную</p>
+        </div>
+        <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+          <button onclick="copyShoppingList()" class="bg-scandi-soft hover:bg-scandi-warm text-scandi-coffee px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-semibold transition flex-1 sm:flex-none text-center">
+            <i class="fa-regular fa-copy mr-1"></i> Скопировать
+          </button>
+          <button onclick="window.print()" class="bg-scandi-soft hover:bg-scandi-warm text-scandi-coffee px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-semibold transition flex-1 sm:flex-none text-center">
+            <i class="fa-solid fa-print mr-1"></i> Печать
+          </button>
+          <button onclick="clearShoppingList()" class="bg-rose-950/40 text-rose-300 hover:bg-rose-900/60 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-semibold transition flex-1 sm:flex-none text-center">
+            <i class="fa-solid fa-trash mr-1"></i> Очистить
+          </button>
+        </div>
+      </div>
+
+      <form onsubmit="handleCustomShoppingItem(event)" class="flex gap-2">
+        <input type="text" id="custom-shop-input" placeholder="Добавить продукт (например: Молоко 1 л)..." class="flex-grow px-4 sm:px-5 py-2.5 sm:py-3 rounded-full border border-scandi-warm bg-scandi-soft text-xs sm:text-sm text-scandi-coffee focus:outline-none focus:border-scandi-terracotta shadow-sm placeholder:text-scandi-coffee/40" required>
+        <button type="submit" class="bg-scandi-terracotta text-scandi-milk px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-medium hover:bg-scandi-terracotta-hover transition shadow-sm whitespace-nowrap active:scale-95">
+          Добавить
+        </button>
+      </form>
+
+      <div id="shopping-list-container" class="bg-scandi-milk rounded-2xl sm:rounded-3xl border border-scandi-warm p-4 sm:p-6 shadow-sm divide-y divide-scandi-warm/60"></div>
+    </section>
+
+  </main>
+
+  <!-- PRINTABLE SHOPPING LIST -->
+  <div id="printable-shopping-list" class="print-only p-8">
+    <h1 class="text-2xl font-bold mb-4">ScandiBakes & Co. — Список покупок</h1>
+    <ul id="printable-items-list" class="list-disc pl-5 space-y-2"></ul>
+  </div>
+
+  <!-- MODAL 1: RECIPE DETAILS & COOKING TIMER -->
+  <div id="recipe-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-scandi-milk rounded-2xl sm:rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-y-auto border border-scandi-warm shadow-2xl relative text-scandi-coffee">
+      <button onclick="closeModal('recipe-modal')" class="absolute top-3 right-3 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-scandi-cream/80 hover:bg-scandi-cream text-scandi-coffee flex items-center justify-center shadow-md transition">
+        <i class="fa-solid fa-xmark text-base sm:text-lg"></i>
+      </button>
+
+      <div id="modal-recipe-content" class="p-4 sm:p-8 space-y-4 sm:space-y-6"></div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: ADD / EDIT RECIPE -->
+  <div id="add-recipe-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-scandi-milk rounded-2xl sm:rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto border border-scandi-warm shadow-2xl p-5 sm:p-8 relative text-scandi-coffee">
+      <button onclick="closeModal('add-recipe-modal')" class="absolute top-3 right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-scandi-soft text-scandi-coffee flex items-center justify-center transition hover:bg-scandi-warm">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+
+      <h2 id="recipe-form-title" class="font-serif text-xl sm:text-2xl font-bold text-scandi-coffee mb-4 sm:mb-6">Создать новый рецепт</h2>
+
+      <form id="recipe-form" onsubmit="handleSaveRecipe(event)" class="space-y-3 sm:space-y-4">
+        <input type="hidden" id="form-recipe-id">
+        
+        <div>
+          <label class="block text-[10px] sm:text-xs font-bold text-scandi-coffee uppercase mb-1">Название блюда *</label>
+          <input type="text" id="form-title" required placeholder="Например: Шведские булочки с корицей" class="w-full px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-scandi-warm text-xs sm:text-sm focus:outline-none focus:border-scandi-terracotta bg-scandi-soft text-scandi-coffee">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div>
+            <label class="block text-[10px] sm:text-xs font-bold text-scandi-coffee uppercase mb-1">Категория</label>
+            <select id="form-category" class="w-full px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-scandi-warm text-xs sm:text-sm focus:outline-none focus:border-scandi-terracotta bg-scandi-soft text-scandi-coffee">
+              <option value="Завтраки">🥞 Завтраки</option>
+              <option value="Первые блюда">🍲 Первые блюда</option>
+              <option value="Вторые блюда">🍝 Вторые блюда</option>
+              <option value="Выпечка и десерты" selected>🥐 Выпечка и десерты</option>
+              <option value="Салаты и закуски">🥗 Салаты и закуски</option>
+              <option value="Напитки">☕ Напитки</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] sm:text-xs font-bold text-scandi-coffee uppercase mb-1">Время (мин)</label>
+            <input type="number" id="form-time" required min="1" placeholder="45" class="w-full px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-scandi-warm text-xs sm:text-sm focus:outline-none focus:border-scandi-terracotta bg-scandi-soft text-scandi-coffee">
+          </div>
+          <div>
+            <label class="block text-[10px] sm:text-xs font-bold text-scandi-coffee uppercase mb-1">Сложность</label>
+            <select id="form-difficulty" class="w-full px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-scandi-warm text-xs sm:text-sm focus:outline-none focus:border-scandi-terracotta bg-scandi-soft text-scandi-coffee">
+              <option value="Легко">Легко</option>
+              <option value="Средне" selected>Средне</option>
+              <option value="Сложно">Сложно</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] sm:text-xs font-bold text-scandi-coffee uppercase mb-1">Изображение (URL или выбрать файл)</label>
+          <input type="text" id="form-image" placeholder="https://images.unsplash.com/photo-..." class="w-full px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-scandi-warm text-xs sm:text-sm focus:outline-none focus:border-scandi-terracotta bg-scandi-soft text-scandi-coffee mb-2">
+          <input type="file" id="form-image-file" accept="image/*" onchange="convertImageToBase64(this)" class="text-[11px] text-scandi-coffee/60 w-full">
+        </div>
+
+        <div>
+          <label class="block text-[10px] sm:text-xs font-bold text-scandi-coffee uppercase mb-1">Ингредиенты (каждый с новой строки) *</label>
+          <textarea id="form-ingredients" required rows="3" placeholder="Мука — 500 г&#10;Сахар — 100 г&#10;Корица — 2 ст. л." class="w-full px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-scandi-warm text-xs sm:text-sm focus:outline-none focus:border-scandi-terracotta bg-scandi-soft text-scandi-coffee"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-[10px] sm:text-xs font-bold text-scandi-coffee uppercase mb-1">Инструкция приготовления *</label>
+          <textarea id="form-steps" required rows="4" placeholder="Шаг 1: Замесите пышное тесто...&#10;Шаг 2: Раскатайте и посыпьте корицей..." class="w-full px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-scandi-warm text-xs sm:text-sm focus:outline-none focus:border-scandi-terracotta bg-scandi-soft text-scandi-coffee"></textarea>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2.5">
+          <button type="button" onclick="closeModal('add-recipe-modal')" class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium border border-scandi-warm text-scandi-coffee hover:bg-scandi-soft">
+            Отмена
+          </button>
+          <button type="submit" class="bg-scandi-terracotta hover:bg-scandi-terracotta-hover text-scandi-milk px-5 py-2 sm:px-6 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition shadow-md active:scale-95">
+            Сохранить рецепт
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: PROFILE & FAMILY CODE -->
+  <div id="profile-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-scandi-milk rounded-2xl sm:rounded-3xl max-w-md w-full border border-scandi-warm shadow-2xl p-5 sm:p-8 relative text-scandi-coffee">
+      <button onclick="closeModal('profile-modal')" class="absolute top-3 right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-scandi-soft text-scandi-coffee flex items-center justify-center hover:bg-scandi-warm">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+
+      <div class="text-center mb-5">
+        <div class="w-14 h-14 sm:w-16 sm:h-16 bg-scandi-soft border-2 border-scandi-terracotta rounded-full mx-auto flex items-center justify-center text-scandi-terracotta text-xl sm:text-2xl font-serif font-bold mb-2">
+          <i class="fa-solid fa-user-gear"></i>
+        </div>
+        <h2 class="font-serif text-xl sm:text-2xl font-bold text-scandi-coffee">Мой Профиль</h2>
+        <p id="user-status-text" class="text-xs text-scandi-coffee/60">Авторизация профиля</p>
+      </div>
+
+      <div class="bg-scandi-soft p-3.5 sm:p-4 rounded-2xl border border-scandi-warm mb-5 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] sm:text-xs font-bold text-scandi-coffee uppercase">Код вашей семьи</span>
+          <span class="text-[9px] sm:text-[10px] bg-scandi-terracotta text-scandi-milk px-2 py-0.5 rounded-full">Совместный доступ</span>
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="my-family-code" readonly class="w-full px-3 py-2 bg-scandi-milk rounded-xl text-xs font-mono border border-scandi-warm text-scandi-coffee text-center font-bold" value="...">
+          <button onclick="copyFamilyCode()" class="bg-scandi-terracotta text-scandi-milk px-3 py-2 rounded-xl text-xs hover:bg-scandi-terracotta-hover transition active:scale-95">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+        </div>
+        <p class="text-[10px] sm:text-[11px] text-scandi-coffee/70 leading-relaxed">Поделитесь этим кодом с близкими, чтобы вести общую книгу рецептов и семейный список покупок.</p>
+      </div>
+
+      <form onsubmit="handleJoinFamily(event)" class="space-y-2.5">
+        <label class="block text-[10px] sm:text-xs font-bold text-scandi-coffee uppercase">Присоединиться к другой семье</label>
+        <div class="flex gap-2">
+          <input type="text" id="join-family-input" required placeholder="Вставьте код семьи..." class="w-full px-3.5 py-2 rounded-xl border border-scandi-warm bg-scandi-soft text-xs text-scandi-coffee focus:outline-none focus:border-scandi-terracotta">
+          <button type="submit" class="bg-scandi-terracotta text-scandi-milk px-3.5 py-2 rounded-xl text-xs font-medium hover:bg-scandi-terracotta-hover transition whitespace-nowrap active:scale-95">
+            Объединить
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 4: "WHAT'S IN FRIDGE?" -->
+  <div id="fridge-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-scandi-milk rounded-2xl sm:rounded-3xl max-w-lg w-full border border-scandi-warm shadow-2xl p-5 sm:p-8 relative text-scandi-coffee">
+      <button onclick="closeModal('fridge-modal')" class="absolute top-3 right-3 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-scandi-soft text-scandi-coffee flex items-center justify-center hover:bg-scandi-warm">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+
+      <div class="mb-4">
+        <h2 class="font-serif text-xl sm:text-2xl font-bold text-scandi-coffee">Что в холодильнике?</h2>
+        <p class="text-xs text-scandi-coffee/60">Введите имеющиеся продукты через запятую, и мы подберем подходящие рецепты.</p>
+      </div>
+
+      <div class="space-y-3.5">
+        <input type="text" id="fridge-ingredients-input" placeholder="например: яйца, молоко, мука, сыр" class="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl border border-scandi-warm text-xs sm:text-sm focus:outline-none focus:border-scandi-terracotta bg-scandi-soft text-scandi-coffee">
+        <div class="flex justify-end gap-2">
+          <button onclick="clearFridgeSearch()" class="px-3.5 py-2 text-xs font-medium text-scandi-coffee/70 hover:underline">Сбросить</button>
+          <button onclick="applyFridgeSearch()" class="bg-scandi-terracotta text-scandi-milk px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs font-medium hover:bg-scandi-terracotta-hover transition active:scale-95">
+            Найти блюда
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: PLANNER SELECTOR -->
+  <div id="planner-select-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-scandi-milk rounded-2xl sm:rounded-3xl max-w-md w-full max-h-[80vh] flex flex-col border border-scandi-warm shadow-2xl p-5 relative text-scandi-coffee">
+      <button onclick="closeModal('planner-select-modal')" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-scandi-soft text-scandi-coffee flex items-center justify-center hover:bg-scandi-warm">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+
+      <h3 id="planner-modal-title" class="font-serif text-lg sm:text-xl font-bold text-scandi-coffee mb-3">Выберите блюдо</h3>
+
+      <div id="planner-recipes-list" class="overflow-y-auto space-y-2 flex-grow pr-1"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- ДЕФОЛТНЫЕ РЕЦЕПТЫ ---
+    const DEFAULT_RECIPES = [
+      {
+        id: 'rec_1',
+        title: 'Kanelbullar (Булочки с корицей)',
+        category: 'Выпечка и десерты',
+        time: 60,
+        difficulty: 'Средне',
+        image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&auto=format&fit=crop',
+        ingredients: ['Мука — 500 г', 'Молоко — 250 мл', 'Сливочное масло — 100 г', 'Сахар — 80 г', 'Дрожжи — 7 г', 'Корица — 2 ст. л.'],
+        steps: ['Смешайте теплое молоко с дрожжами.', 'Замесите мягкое тесто, дайте подняться.', 'Раскатайте, посыпьте корицей с сахаром, скрутите и выпекайте при 200°C.'],
+        isFav: true
+      },
+      {
+        id: 'rec_2',
+        title: 'Скандинавский суп с лососем',
+        category: 'Первые блюда',
+        time: 35,
+        difficulty: 'Легко',
+        image: 'https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=800&auto=format&fit=crop',
+        ingredients: ['Лосось — 400 г', 'Картофель — 3 шт', 'Сливки 20% — 200 мл', 'Бульон — 1 л', 'Укроп свежий — 1 пучок'],
+        steps: ['Отварите картофель и морковь в бульоне.', 'Добавьте кусочки лосося и варите 7 минут.', 'Влейте сливки, доведите до кипения и посыпьте укропом.'],
+        isFav: false
+      }
+    ];
+
+    // --- ГЛОБАЛЬНОЕ СОСТОЯНИЕ ПРИЛОЖЕНИЯ ---
+    let familyCode = localStorage.getItem('sb_family_code') || ('FAM-' + Math.floor(100000 + Math.random() * 900000));
+    localStorage.setItem('sb_family_code', familyCode);
+
+    let recipes = JSON.parse(localStorage.getItem(`sb_recipes_${familyCode}`)) || DEFAULT_RECIPES;
+    let todayMenu = JSON.parse(localStorage.getItem(`sb_today_${familyCode}`)) || [];
+    let planner = JSON.parse(localStorage.getItem(`sb_planner_${familyCode}`)) || {
+      'Понедельник': [], 'Вторник': [], 'Среда': [], 'Четверг': [], 'Пятница': [], 'Суббота': [], 'Воскресенье': []
+    };
+    let shoppingList = JSON.parse(localStorage.getItem(`sb_shop_${familyCode}`)) || [];
+
+    let currentCategory = 'all';
+    let fridgeFilter = [];
+    let timerInterval = null;
+    let timerSeconds = 0;
+    let currentModalRecipeId = null;
+    let selectedDayForPlanner = null;
+
+    function saveData() {
+      localStorage.setItem(`sb_recipes_${familyCode}`, JSON.stringify(recipes));
+      localStorage.setItem(`sb_today_${familyCode}`, JSON.stringify(todayMenu));
+      localStorage.setItem(`sb_planner_${familyCode}`, JSON.stringify(planner));
+      localStorage.setItem(`sb_shop_${familyCode}`, JSON.stringify(shoppingList));
+      updateBadges();
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 2500);
+    }
+
+    function updateBadges() {
+      const todayBadge = document.getElementById('today-badge');
+      const mobTodayBadge = document.getElementById('mob-today-badge');
+      const shopBadge = document.getElementById('shop-badge');
+      const mobShopBadge = document.getElementById('mob-shop-badge');
+      
+      if (todayMenu.length > 0) {
+        if(todayBadge) { todayBadge.textContent = todayMenu.length; todayBadge.classList.remove('hidden'); }
+        if(mobTodayBadge) { mobTodayBadge.textContent = todayMenu.length; mobTodayBadge.classList.remove('hidden'); }
+      } else {
+        if(todayBadge) todayBadge.classList.add('hidden');
+        if(mobTodayBadge) mobTodayBadge.classList.add('hidden');
+      }
+
+      const uncheckedCount = shoppingList.filter(i => !i.checked).length;
+      if (uncheckedCount > 0) {
+        if(shopBadge) { shopBadge.textContent = uncheckedCount; shopBadge.classList.remove('hidden'); }
+        if(mobShopBadge) { mobShopBadge.textContent = uncheckedCount; mobShopBadge.classList.remove('hidden'); }
+      } else {
+        if(shopBadge) shopBadge.classList.add('hidden');
+        if(mobShopBadge) mobShopBadge.classList.add('hidden');
+      }
+    }
+
+    // --- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ---
+    function switchTab(tab) {
+      ['recipes', 'today', 'planner', 'shopping'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        
+        // Десктоп кнопки
+        const btn = document.getElementById(`tab-${t}`);
+        if(btn) {
+          btn.classList.remove('bg-scandi-terracotta', 'text-scandi-milk');
+          btn.classList.add('text-scandi-coffee');
+        }
+
+        // Мобильные кнопки
+        const mobBtn = document.getElementById(`mob-tab-${t}`);
+        if(mobBtn) {
+          mobBtn.classList.remove('text-scandi-terracotta', 'font-semibold');
+          mobBtn.classList.add('text-scandi-coffee/70');
+        }
+      });
+
+      document.getElementById(`view-${tab}`).classList.remove('hidden');
+      
+      const activeBtn = document.getElementById(`tab-${tab}`);
+      if(activeBtn) {
+        activeBtn.classList.add('bg-scandi-terracotta', 'text-scandi-milk');
+        activeBtn.classList.remove('text-scandi-coffee');
+      }
+
+      const activeMobBtn = document.getElementById(`mob-tab-${tab}`);
+      if(activeMobBtn) {
+        activeMobBtn.classList.add('text-scandi-terracotta', 'font-semibold');
+        activeMobBtn.classList.remove('text-scandi-coffee/70');
+      }
+
+      if (tab === 'recipes') renderRecipes();
+      if (tab === 'today') renderTodayMenu();
+      if (tab === 'planner') renderPlanner();
+      if (tab === 'shopping') renderShoppingList();
+    }
+
+    // --- ОТРИСОВКА РЕЦЕПТОВ ---
+    function renderRecipes() {
+      const container = document.getElementById('recipes-container');
+      const emptyState = document.getElementById('empty-recipes');
+      const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+
+      const filtered = recipes.filter(r => {
+        const matchesCategory = currentCategory === 'all' ? true : (currentCategory === 'fav' ? r.isFav : r.category === currentCategory);
+        const matchesSearch = r.title.toLowerCase().includes(searchVal) || r.ingredients.some(i => i.toLowerCase().includes(searchVal));
+        const matchesFridge = fridgeFilter.length === 0 || fridgeFilter.some(f => r.ingredients.some(i => i.toLowerCase().includes(f)));
+        return matchesCategory && matchesSearch && matchesFridge;
+      });
+
+      container.innerHTML = '';
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      filtered.forEach(r => {
+        const isToday = todayMenu.includes(r.id);
+        const card = document.createElement('div');
+        card.className = 'break-inside-avoid bg-scandi-milk rounded-2xl sm:rounded-3xl border border-scandi-warm overflow-hidden shadow-sm hover:shadow-md transition duration-300 group mb-4 sm:mb-6';
+        card.innerHTML = `
+          <div class="relative overflow-hidden">
+            <img src="${r.image}" class="w-full h-44 sm:h-52 object-cover group-hover:scale-105 transition duration-500 cursor-pointer" onclick="openRecipeDetails('${r.id}')">
+            <span class="absolute top-2.5 left-2.5 bg-scandi-milk/90 backdrop-blur-md text-scandi-coffee text-[9px] sm:text-[10px] font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full uppercase tracking-wider">${r.category}</span>
+            <div class="absolute top-2.5 right-2.5 flex gap-1.5 sm:gap-2">
+              <button onclick="toggleTodayMenu('${r.id}')" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full ${isToday ? 'bg-scandi-terracotta text-scandi-milk' : 'bg-scandi-milk/80 text-scandi-coffee'} hover:scale-110 flex items-center justify-center transition shadow-md active:scale-95">
+                <i class="fa-solid fa-plate-wheat text-xs sm:text-sm"></i>
+              </button>
+              <button onclick="toggleFav('${r.id}')" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-scandi-milk/80 ${r.isFav ? 'text-rose-400' : 'text-scandi-coffee'} hover:scale-110 flex items-center justify-center transition shadow-md active:scale-95">
+                <i class="fa-${r.isFav ? 'solid' : 'regular'} fa-heart text-xs sm:text-sm"></i>
+              </button>
+            </div>
+          </div>
+          <div class="p-3.5 sm:p-5 space-y-2 sm:space-y-3">
+            <h3 class="font-serif text-base sm:text-lg font-bold text-scandi-coffee hover:text-scandi-terracotta transition cursor-pointer leading-tight" onclick="openRecipeDetails('${r.id}')">${r.title}</h3>
+            <div class="flex items-center gap-3 text-[11px] sm:text-xs text-scandi-coffee/60">
+              <span><i class="fa-regular fa-clock text-scandi-terracotta mr-1"></i>${r.time} мин</span>
+              <span><i class="fa-solid fa-chart-line text-scandi-terracotta mr-1"></i>${r.difficulty}</span>
+            </div>
+            <div class="pt-2 border-t border-scandi-warm/60 flex justify-between items-center text-[11px] sm:text-xs">
+              <button onclick="addRecipeIngredientsToShopping('${r.id}')" class="text-scandi-terracotta font-semibold hover:underline flex items-center gap-1">
+                <i class="fa-solid fa-basket-shopping"></i> В покупки
+              </button>
+              <div class="flex gap-2.5">
+                <button onclick="openEditRecipe('${r.id}')" class="text-scandi-coffee/50 hover:text-scandi-coffee p-1"><i class="fa-solid fa-pen"></i></button>
+                <button onclick="deleteRecipe('${r.id}')" class="text-scandi-coffee/50 hover:text-rose-400 p-1"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function setCategoryFilter(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        if(btn.dataset.cat === cat) {
+          btn.className = 'cat-btn active border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full font-medium transition whitespace-nowrap bg-scandi-terracotta text-scandi-milk border-scandi-terracotta';
+        } else {
+          btn.className = 'cat-btn border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full font-medium transition whitespace-nowrap bg-scandi-milk text-scandi-coffee border-scandi-warm hover:border-scandi-terracotta';
+        }
+      });
+      renderRecipes();
+    }
+
+    function toggleFav(id) {
+      const r = recipes.find(item => item.id === id);
+      if(r) {
+        r.isFav = !r.isFav;
+        saveData();
+        renderRecipes();
+      }
+    }
+
+    function toggleTodayMenu(id) {
+      if(todayMenu.includes(id)) {
+        todayMenu = todayMenu.filter(i => i !== id);
+        showToast('Убрано из меню на сегодня');
+      } else {
+        todayMenu.push(id);
+        showToast('Добавлено в меню на сегодня!');
+      }
+      saveData();
+      renderRecipes();
+      if(!document.getElementById('view-today').classList.contains('hidden')) renderTodayMenu();
+    }
+
+    // --- СЕКЦИЯ МЕНЮ НА СЕГОДНЯ ---
+    function renderTodayMenu() {
+      const container = document.getElementById('today-container');
+      const emptyState = document.getElementById('empty-today');
+      const items = recipes.filter(r => todayMenu.includes(r.id));
+
+      container.innerHTML = '';
+      if(items.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      items.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'bg-scandi-milk rounded-2xl sm:rounded-3xl border border-scandi-warm overflow-hidden shadow-sm p-4 sm:p-5 space-y-3';
+        card.innerHTML = `
+          <div class="flex gap-3 items-center">
+            <img src="${r.image}" class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl object-cover">
+            <div>
+              <span class="text-[9px] sm:text-[10px] font-bold text-scandi-terracotta uppercase">${r.category}</span>
+              <h4 class="font-serif font-bold text-scandi-coffee text-sm sm:text-base leading-tight">${r.title}</h4>
+              <p class="text-[11px] text-scandi-coffee/60 mt-1"><i class="fa-regular fa-clock mr-1"></i>${r.time} мин</p>
+            </div>
+          </div>
+          <div class="flex justify-between items-center pt-2 border-t border-scandi-warm/60 text-xs">
+            <button onclick="openRecipeDetails('${r.id}')" class="bg-scandi-soft text-scandi-coffee px-3.5 py-1.5 rounded-full font-medium hover:bg-scandi-warm transition">
+              Открыть рецепт
+            </button>
+            <button onclick="toggleTodayMenu('${r.id}')" class="text-rose-400 hover:underline">
+              Убрать
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // --- СПИСОК ПОКУПОК ---
+    function renderShoppingList() {
+      const container = document.getElementById('shopping-list-container');
+      container.innerHTML = '';
+
+      if (shoppingList.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-6 sm:py-8 text-scandi-coffee/50 text-xs sm:text-sm">
+            Ваш список покупок пуст
+          </div>
+        `;
+        return;
+      }
+
+      shoppingList.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = 'py-2.5 sm:py-3 flex items-center justify-between gap-3';
+        row.innerHTML = `
+          <label class="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none flex-grow">
+            <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleShoppingItem(${index})" class="w-4 h-4 sm:w-5 sm:h-5 accent-scandi-terracotta rounded cursor-pointer">
+            <span class="text-xs sm:text-sm ${item.checked ? 'line-through text-scandi-coffee/40' : 'text-scandi-coffee'}">${item.text}</span>
+          </label>
+          <button onclick="deleteShoppingItem(${index})" class="text-scandi-coffee/40 hover:text-rose-400 text-xs p-1">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function handleCustomShoppingItem(e) {
+      e.preventDefault();
+      const input = document.getElementById('custom-shop-input');
+      const text = input.value.trim();
+      if(text) {
+        shoppingList.push({ text: text, checked: false });
+        input.value = '';
+        saveData();
+        renderShoppingList();
+        showToast('Продукт добавлен!');
+      }
+    }
+
+    function toggleShoppingItem(index) {
+      if(shoppingList[index]) {
+        shoppingList[index].checked = !shoppingList[index].checked;
+        saveData();
+        renderShoppingList();
+      }
+    }
+
+    function deleteShoppingItem(index) {
+      shoppingList.splice(index, 1);
+      saveData();
+      renderShoppingList();
+    }
+
+    function clearShoppingList() {
+      if(confirm('Очистить весь список покупок?')) {
+        shoppingList = [];
+        saveData();
+        renderShoppingList();
+        showToast('Список очищен');
+      }
+    }
+
+    function copyShoppingList() {
+      if(shoppingList.length === 0) return;
+      const text = shoppingList.map(i => `${i.checked ? '[x]' : '[ ]'} ${i.text}`).join('\n');
+      navigator.clipboard.writeText(text);
+      showToast('Список скопирован в буфер!');
+    }
+
+    function addRecipeIngredientsToShopping(recipeId) {
+      const r = recipes.find(item => item.id === recipeId);
+      if(r && r.ingredients) {
+        r.ingredients.forEach(ing => {
+          shoppingList.push({ text: `${ing} (${r.title})`, checked: false });
+        });
+        saveData();
+        showToast('Ингредиенты добавлены!');
+      }
+    }
+
+    // --- ПЛАНЕР НЕДЕЛИ ---
+    function renderPlanner() {
+      const grid = document.getElementById('planner-days-grid');
+      grid.innerHTML = '';
+
+      Object.keys(planner).forEach(day => {
+        const dayRecipes = recipes.filter(r => planner[day].includes(r.id));
+        const col = document.createElement('div');
+        col.className = 'bg-scandi-milk p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-scandi-warm space-y-2.5 flex flex-col justify-between min-h-[140px] sm:min-h-[180px]';
+        
+        let recipesListHtml = '';
+        dayRecipes.forEach(r => {
+          recipesListHtml += `
+            <div class="bg-scandi-soft p-1.5 sm:p-2 rounded-xl text-[11px] sm:text-xs flex justify-between items-center">
+              <span class="font-medium truncate mr-1">${r.title}</span>
+              <button onclick="removeFromPlanner('${day}', '${r.id}')" class="text-scandi-coffee/40 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          `;
+        });
+
+        col.innerHTML = `
+          <div>
+            <h4 class="font-bold text-[10px] sm:text-xs uppercase text-scandi-terracotta tracking-wider mb-2 text-center">${day}</h4>
+            <div class="space-y-1">${recipesListHtml}</div>
+          </div>
+          <button onclick="openPlannerSelectModal('${day}')" class="w-full py-1.5 bg-scandi-soft hover:bg-scandi-warm border border-dashed border-scandi-warm text-scandi-coffee text-xs font-semibold rounded-xl transition mt-2 active:scale-95">
+            + Блюдо
+          </button>
+        `;
+        grid.appendChild(col);
+      });
+    }
+
+    function openPlannerSelectModal(day) {
+      selectedDayForPlanner = day;
+      const container = document.getElementById('planner-recipes-list');
+      container.innerHTML = '';
+
+      recipes.forEach(r => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-left p-2.5 sm:p-3 hover:bg-scandi-soft rounded-2xl transition border border-scandi-warm/60 flex items-center gap-2.5 active:scale-95';
+        btn.onclick = () => addToPlanner(day, r.id);
+        btn.innerHTML = `
+          <img src="${r.image}" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover">
+          <div>
+            <div class="font-serif font-bold text-xs sm:text-sm text-scandi-coffee">${r.title}</div>
+            <div class="text-[10px] text-scandi-coffee/60">${r.category}</div>
+          </div>
+        `;
+        container.appendChild(btn);
+      });
+
+      openModal('planner-select-modal');
+    }
+
+    function addToPlanner(day, recipeId) {
+      if(!planner[day].includes(recipeId)) {
+        planner[day].push(recipeId);
+        saveData();
+        renderPlanner();
+      }
+      closeModal('planner-select-modal');
+    }
+
+    function removeFromPlanner(day, recipeId) {
+      planner[day] = planner[day].filter(id => id !== recipeId);
+      saveData();
+      renderPlanner();
+    }
+
+    function clearWeeklyPlanner() {
+      if(confirm('Очистить весь планер на неделю?')) {
+        Object.keys(planner).forEach(d => planner[d] = []);
+        saveData();
+        renderPlanner();
+      }
+    }
+
+    // --- ДЕТАЛИ РЕЦЕПТА И ТАЙМЕР ---
+    function openRecipeDetails(id) {
+      const r = recipes.find(item => item.id === id);
+      if(!r) return;
+      currentModalRecipeId = id;
+
+      const container = document.getElementById('modal-recipe-content');
+      container.innerHTML = `
+        <div class="relative rounded-2xl overflow-hidden h-48 sm:h-64">
+          <img src="${r.image}" class="w-full h-full object-cover">
+          <span class="absolute top-2.5 left-2.5 bg-scandi-milk/90 backdrop-blur-md text-scandi-coffee text-[10px] sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full uppercase">${r.category}</span>
+        </div>
+
+        <div>
+          <h2 class="font-serif text-xl sm:text-2xl font-bold text-scandi-coffee mb-1">${r.title}</h2>
+          <div class="flex items-center gap-3 text-xs text-scandi-coffee/60">
+            <span><i class="fa-regular fa-clock text-scandi-terracotta mr-1"></i>${r.time} минут</span>
+            <span><i class="fa-solid fa-chart-line text-scandi-terracotta mr-1"></i>${r.difficulty}</span>
+          </div>
+        </div>
+
+        <!-- Кулинарный мини-таймер -->
+        <div class="bg-scandi-soft p-3 sm:p-4 rounded-2xl border border-scandi-warm flex flex-wrap items-center justify-between gap-2.5">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-stopwatch text-scandi-terracotta text-lg sm:text-xl"></i>
+            <span class="text-xs font-bold text-scandi-coffee uppercase">Таймер готовки</span>
+          </div>
+          <div class="flex items-center gap-2 sm:gap-3">
+            <span id="timer-display" class="font-mono font-bold text-lg sm:text-xl text-scandi-coffee">00:00</span>
+            <button onclick="startTimer(${r.time})" class="bg-scandi-terracotta text-scandi-milk px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-medium hover:bg-scandi-terracotta-hover active:scale-95">Старт</button>
+            <button onclick="stopTimer()" class="bg-scandi-milk border border-scandi-warm text-scandi-coffee px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-medium active:scale-95">Стоп</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <div>
+            <h4 class="font-serif font-bold text-sm sm:text-base text-scandi-coffee mb-2">Ингредиенты:</h4>
+            <ul class="space-y-1 text-xs text-scandi-coffee/80 list-disc pl-4">
+              ${r.ingredients.map(i => `<li>${i}</li>`).join('')}
+            </ul>
+            <button onclick="addRecipeIngredientsToShopping('${r.id}')" class="mt-3 sm:mt-4 bg-scandi-terracotta text-scandi-milk px-4 py-2 rounded-full text-xs font-medium hover:bg-scandi-terracotta-hover transition w-full active:scale-95">
+              <i class="fa-solid fa-basket-shopping mr-1"></i> В список покупок
+            </button>
+          </div>
+          <div>
+            <h4 class="font-serif font-bold text-sm sm:text-base text-scandi-coffee mb-2">Приготовление:</h4>
+            <ol class="space-y-1.5 text-xs text-scandi-coffee/80 list-decimal pl-4 leading-relaxed">
+              ${r.steps.map(s => `<li>${s}</li>`).join('')}
+            </ol>
+          </div>
+        </div>
+      `;
+
+      openModal('recipe-modal');
+    }
+
+    function startTimer(defaultMinutes) {
+      stopTimer();
+      timerSeconds = (defaultMinutes || 15) * 60;
+      updateTimerDisplay();
+
+      timerInterval = setInterval(() => {
+        timerSeconds--;
+        updateTimerDisplay();
+        if(timerSeconds <= 0) {
+          stopTimer();
+          alert('⏰ Время вышло! Блюдо готово!');
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if(timerInterval) clearInterval(timerInterval);
+      timerInterval = null;
+    }
+
+    function updateTimerDisplay() {
+      const display = document.getElementById('timer-display');
+      if(display) {
+        const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+        const s = (timerSeconds % 60).toString().padStart(2, '0');
+        display.textContent = `${m}:${s}`;
+      }
+    }
+
+    // --- МОДАЛЬНЫЕ ОКНА И ФОРМЫ ---
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function convertImageToBase64(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('form-image').value = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function handleSaveRecipe(e) {
+      e.preventDefault();
+      const id = document.getElementById('form-recipe-id').value || ('rec_' + Date.now());
+      const title = document.getElementById('form-title').value.trim();
+      const category = document.getElementById('form-category').value;
+      const time = parseInt(document.getElementById('form-time').value) || 30;
+      const difficulty = document.getElementById('form-difficulty').value;
+      const image = document.getElementById('form-image').value || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=800&auto=format&fit=crop';
+      const ingredients = document.getElementById('form-ingredients').value.split('\n').filter(i => i.trim());
+      const steps = document.getElementById('form-steps').value.split('\n').filter(s => s.trim());
+
+      const existingIndex = recipes.findIndex(r => r.id === id);
+      const recipeObj = { id, title, category, time, difficulty, image, ingredients, steps, isFav: false };
+
+      if(existingIndex >= 0) {
+        recipeObj.isFav = recipes[existingIndex].isFav;
+        recipes[existingIndex] = recipeObj;
+      } else {
+        recipes.push(recipeObj);
+      }
+
+      saveData();
+      renderRecipes();
+      closeModal('add-recipe-modal');
+      document.getElementById('recipe-form').reset();
+      showToast('Рецепт сохранен!');
+    }
+
+    function openEditRecipe(id) {
+      const r = recipes.find(item => item.id === id);
+      if(!r) return;
+
+      document.getElementById('form-recipe-id').value = r.id;
+      document.getElementById('form-title').value = r.title;
+      document.getElementById('form-category').value = r.category;
+      document.getElementById('form-time').value = r.time;
+      document.getElementById('form-difficulty').value = r.difficulty;
+      document.getElementById('form-image').value = r.image;
+      document.getElementById('form-ingredients').value = r.ingredients.join('\n');
+      document.getElementById('form-steps').value = r.steps.join('\n');
+
+      document.getElementById('recipe-form-title').textContent = 'Редактировать рецепт';
+      openModal('add-recipe-modal');
+    }
+
+    function deleteRecipe(id) {
+      if(confirm('Удалить этот рецепт?')) {
+        recipes = recipes.filter(r => r.id !== id);
+        todayMenu = todayMenu.filter(i => i !== id);
+        saveData();
+        renderRecipes();
+        showToast('Рецепт удален');
+      }
+    }
+
+    // --- ПРОФИЛЬ И СЕМЕЙНЫЙ КОД ---
+    function openProfileModal() {
+      document.getElementById('my-family-code').value = familyCode;
+      openModal('profile-modal');
+    }
+
+    function copyFamilyCode() {
+      navigator.clipboard.writeText(familyCode);
+      showToast('Семейный код скопирован!');
+    }
+
+    function handleJoinFamily(e) {
+      e.preventDefault();
+      const code = document.getElementById('join-family-input').value.trim().toUpperCase();
+      if(code) {
+        familyCode = code;
+        localStorage.setItem('sb_family_code', familyCode);
+        recipes = JSON.parse(localStorage.getItem(`sb_recipes_${familyCode}`)) || DEFAULT_RECIPES;
+        todayMenu = JSON.parse(localStorage.getItem(`sb_today_${familyCode}`)) || [];
+        planner = JSON.parse(localStorage.getItem(`sb_planner_${familyCode}`)) || {
+          'Понедельник': [], 'Вторник': [], 'Среда': [], 'Четверг': [], 'Пятница': [], 'Суббота': [], 'Воскресенье': []
+        };
+        shoppingList = JSON.parse(localStorage.getItem(`sb_shop_${familyCode}`)) || [];
+        
+        saveData();
+        renderRecipes();
+        closeModal('profile-modal');
+        showToast('Вы присоединились к семье ' + code);
+      }
+    }
+
+    // --- ХОЛОДИЛЬНИК ПОИСК ---
+    function applyFridgeSearch() {
+      const input = document.getElementById('fridge-ingredients-input').value;
+      fridgeFilter = input.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+      renderRecipes();
+      closeModal('fridge-modal');
+    }
+
+    function clearFridgeSearch() {
+      document.getElementById('fridge-ingredients-input').value = '';
+      fridgeFilter = [];
+      renderRecipes();
+      closeModal('fridge-modal');
+    }
+
+    // Инициализация
+    updateBadges();
+    renderRecipes();
+  </script>
+</body>
+</html>
